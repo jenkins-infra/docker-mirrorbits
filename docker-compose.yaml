@@ -1,0 +1,21 @@
+version: '3'
+services:
+  mirrorbits:
+    entrypoint:
+      - /usr/bin/mirrorbits
+      - daemon
+      - --config
+      - /etc/mirrorbits/mirrorbits.conf
+      - --debug
+    image: olblak/mirrorbits:v0.5.1
+    volumes:
+        - ./mock/mirrorbits.conf:/etc/mirrorbits/mirrorbits.conf
+        - ./mock/repo:/srv/repo
+    ports:
+        - 8080:8080
+
+  redis:
+    image: redis:latest
+    command: --appendonly yes
+    ports:
+        - 6379
