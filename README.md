@@ -8,10 +8,12 @@ __Why GeoIP requires an account?__
 
 In order to build this image, you need a file named 'config.env' containing following env variables
 
-* DOCKER_IMAGE=<your docker image name without the tag>
-* GEOIP_ID=<your geolite account ID>
-* GEOIP_KEY=<your gelite account key>
-* VERSION=<the version that you want to build>
+```
+DOCKER_IMAGE=_your docker image name without the tag_
+GEOIP_ID=_your geolite account ID_
+GEOIP_KEY=_your gelite account key_
+VERSION=_the version that you want to build_
+```
 
 then run `make build`
 
