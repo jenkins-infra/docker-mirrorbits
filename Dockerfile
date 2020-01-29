@@ -51,6 +51,12 @@ LABEL mirrorbit_version=$VERSION
 LABEL repository="https://github.com/olblak/mirrorbits"
 
 RUN \
+  apt-get update && \
+  apt-get install -y ftp rsync ca-certificates && \
+  apt-get clean && \
+  find /var/lib/apt/lists -type f -delete
+
+RUN \
   useradd -M mirrorbits && \
   mkdir /etc/mirrorbits  && \
   mkdir /usr/share/mirrorbits/ && \
