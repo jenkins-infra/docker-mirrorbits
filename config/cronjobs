@@ -1,0 +1,1 @@
+*/5 * * * * date +%s > /srv/repo/jenkins/TIME 2>&1

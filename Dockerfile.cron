@@ -1,0 +1,15 @@
+FROM alpine
+
+ARG VERSION
+
+ENV MIRRORBIT_VERSION $VERSION
+
+RUN \
+  apk add --no-cache tini && \
+  mkdir /etc/cron.d
+
+COPY config/cronjobs /etc/crontabs/root
+
+ENTRYPOINT ["/sbin/tini", "--"]
+
+CMD ["crond", "-f", "-d", "8"]
