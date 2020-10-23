@@ -1,0 +1,1 @@
+buildDockerAndPublishImage('mirrorbits', [mainBranch: 'main']) 
