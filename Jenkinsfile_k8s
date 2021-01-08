@@ -1,1 +1,1 @@
-buildDockerAndPublishImage('mirrorbits', [mainBranch: 'main']) 
+buildDockerAndPublishImage('mirrorbits', [mainBranch: 'master'])
