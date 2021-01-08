@@ -1,63 +1,49 @@
-FROM ubuntu:latest AS geoip
+FROM debian:stable-slim AS mirrorbits
 
-ARG GEOIP_ID
-ARG GEOIP_KEY
+ARG mirrorbits_version=v0.5.1
 
-RUN \
-  apt-get update && \
-  apt-get install -y geoipupdate && \
-  apt-get clean && \
-  find /var/lib/apt/lists -type f -delete
+ENV MIRRORBIT_VERSION=${mirrorbits_version}
 
-COPY config/GeoIP.conf /etc/GeoIP.conf
-
-RUN \
-  sed -i "s/__ACCOUNTID__/$GEOIP_ID/" /etc/GeoIP.conf && \
-  sed -i "s/__LICENSEKEY__/$GEOIP_KEY/" /etc/GeoIP.conf
-
-RUN geoipupdate
-
-####
-FROM ubuntu:latest AS mirrorbits
-
-ARG VERSION
-
-ENV MIRRORBIT_VERSION $VERSION
-
-RUN \
-  apt-get update && \
+RUN apt-get update && \
   apt-get install -y tar curl && \
   apt-get clean && \
   find /var/lib/apt/lists -type f -delete
 
-# Download Binary
-RUN \
-  mkdir /mirrorbits && \
+RUN mkdir /mirrorbits && \
   curl -L https://github.com/etix/mirrorbits/releases/download/${MIRRORBIT_VERSION}/mirrorbits-${MIRRORBIT_VERSION}.tar.gz -O && \
   tar xvzf /mirrorbits-${MIRRORBIT_VERSION}.tar.gz -C / && \
   rm /mirrorbits-${MIRRORBIT_VERSION}.tar.gz
 
-######
-
-FROM ubuntu:latest
+FROM debian:stable-slim
 
 EXPOSE 8080
 
-ARG VERSION
+ARG tini_version=v0.19.0
 
-ENV MIRRORBIT_VERSION $VERSION
-LABEL maintainer="https://github.com/olblak"
-LABEL mirrorbit_version=$VERSION
+ARG mirrorbits_version=v0.5.1
+
+ENV TINI_VERSION=${tini_version}
+
+ENV MIRRORBITS_VERSION=${mirrorbits_version}
+
+LABEL MAINTAINER="https://github.com/olblak"
+
+LABEL MIRRORBITS_VERSION=${mirrorbits_version}
+
+LABEL TINI_VERSION=${tini_version}
+
 LABEL repository="https://github.com/olblak/mirrorbits"
 
-RUN \
-  apt-get update && \
+ADD https://github.com/krallin/tini/releases/download/${tini_version}/tini /bin/tini
+
+RUN chmod +x /bin/tini
+
+RUN apt-get update && \
   apt-get install -y ftp rsync ca-certificates && \
   apt-get clean && \
   find /var/lib/apt/lists -type f -delete
 
-RUN \
-  useradd -M mirrorbits && \
+RUN useradd -M mirrorbits && \
   mkdir /etc/mirrorbits  && \
   mkdir /usr/share/mirrorbits/ && \
   mkdir /srv/repo && \
@@ -70,11 +56,13 @@ RUN \
 
 USER mirrorbits
 
-COPY --from=geoip /var/lib/GeoIP/ /usr/share/GeoIP/
-
 COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
 
-COPY --from=mirrorbits  /mirrorbits/mirrorbits /usr/bin/mirrorbits
-COPY --from=mirrorbits  /mirrorbits/templates /usr/share/mirrorbits/templates
+COPY --from=mirrorbits /mirrorbits/mirrorbits /usr/bin/mirrorbits
 
-ENTRYPOINT /usr/bin/mirrorbits daemon --config /etc/mirrorbits/mirrorbits.conf 
+COPY --from=mirrorbits /mirrorbits/templates /usr/share/mirrorbits/templates
+
+ENTRYPOINT [ "/bin/tini","--" ]
+
+CMD [ "/usr/bin/mirrorbits","daemon","--config","/etc/mirrorbits/mirrorbits.conf" ]
+
