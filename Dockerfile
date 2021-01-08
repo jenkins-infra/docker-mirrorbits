@@ -5,7 +5,7 @@ ARG mirrorbits_version=v0.5.1
 ENV MIRRORBIT_VERSION=${mirrorbits_version}
 
 RUN apt-get update && \
-  apt-get install -y tar curl && \
+  apt-get install --no-install-recommends -y tar curl ca-certificates && \
   apt-get clean && \
   find /var/lib/apt/lists -type f -delete
 
@@ -39,7 +39,7 @@ ADD https://github.com/krallin/tini/releases/download/${tini_version}/tini /bin/
 RUN chmod +x /bin/tini
 
 RUN apt-get update && \
-  apt-get install -y ftp rsync ca-certificates && \
+  apt-get install --no-install-recommends -y ftp rsync ca-certificates && \
   apt-get clean && \
   find /var/lib/apt/lists -type f -delete
 
