@@ -1,6 +1,8 @@
 FROM debian:stable-slim AS mirrorbits
 
-ENV MIRRORBIT_VERSION=v0.5.1
+ARG mirrorbits_version=v0.5.1
+
+ENV MIRRORBIT_VERSION=${mirrorbits_version}
 
 RUN \
   apt-get update && \
@@ -18,19 +20,23 @@ FROM debian:stable-slim
 
 EXPOSE 8080
 
-ENV TINI_VERSION=v0.19.0
+ARG tini_version=v0.19.0
 
-ENV MIRRORBIT_VERSION=v0.5.1
+ARG mirrorbits_version=v0.5.1
+
+ENV TINI_VERSION=${tini_version}
+
+ENV MIRRORBITS_VERSION=${mirrorbits_version}
 
 LABEL MAINTAINER="https://github.com/olblak"
 
-LABEL MIRRORBIT_VERSION=v0.5.1
+LABEL MIRRORBITS_VERSION=${mirrorbits_version}
 
-LABEL TINI_VERSION=v0.19.0
+LABEL TINI_VERSION=${tini_version}
 
 LABEL repository="https://github.com/olblak/mirrorbits"
 
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
+ADD https://github.com/krallin/tini/releases/download/${tini_version}/tini /bin/tini
 
 RUN chmod +x /bin/tini
 
