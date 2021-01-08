@@ -1,26 +1,6 @@
-FROM ubuntu:latest AS geoip
-
-ARG GEOIP_ID
-ARG GEOIP_KEY
-
-RUN \
-  apt-get update && \
-  apt-get install -y geoipupdate && \
-  apt-get clean && \
-  find /var/lib/apt/lists -type f -delete
-
-COPY config/GeoIP.conf /etc/GeoIP.conf
-
-RUN \
-  sed -i "s/__ACCOUNTID__/$GEOIP_ID/" /etc/GeoIP.conf && \
-  sed -i "s/__LICENSEKEY__/$GEOIP_KEY/" /etc/GeoIP.conf
-
-RUN geoipupdate
-
-####
 FROM ubuntu:latest AS mirrorbits
 
-ARG VERSION
+ARG VERSION=v0.5.1
 
 ENV MIRRORBIT_VERSION $VERSION
 
@@ -30,20 +10,17 @@ RUN \
   apt-get clean && \
   find /var/lib/apt/lists -type f -delete
 
-# Download Binary
 RUN \
   mkdir /mirrorbits && \
   curl -L https://github.com/etix/mirrorbits/releases/download/${MIRRORBIT_VERSION}/mirrorbits-${MIRRORBIT_VERSION}.tar.gz -O && \
   tar xvzf /mirrorbits-${MIRRORBIT_VERSION}.tar.gz -C / && \
   rm /mirrorbits-${MIRRORBIT_VERSION}.tar.gz
 
-######
-
 FROM ubuntu:latest
 
 EXPOSE 8080
 
-ARG VERSION
+ARG VERSION=v0.5.1
 
 ENV MIRRORBIT_VERSION $VERSION
 LABEL maintainer="https://github.com/olblak"
@@ -69,8 +46,6 @@ RUN \
   chown mirrorbits /srv/repo
 
 USER mirrorbits
-
-COPY --from=geoip /var/lib/GeoIP/ /usr/share/GeoIP/
 
 COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
 
