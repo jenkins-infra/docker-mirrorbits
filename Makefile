@@ -5,7 +5,6 @@ build:
 	docker build \
 		-t $(DOCKER_IMAGE):$(VERSION) \
 		--no-cache \
-		--build-arg VERSION=$(VERSION) \
 		.
 
 push:
