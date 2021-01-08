@@ -4,14 +4,12 @@ ARG mirrorbits_version=v0.5.1
 
 ENV MIRRORBIT_VERSION=${mirrorbits_version}
 
-RUN \
-  apt-get update && \
+RUN apt-get update && \
   apt-get install -y tar curl && \
   apt-get clean && \
   find /var/lib/apt/lists -type f -delete
 
-RUN \
-  mkdir /mirrorbits && \
+RUN mkdir /mirrorbits && \
   curl -L https://github.com/etix/mirrorbits/releases/download/${MIRRORBIT_VERSION}/mirrorbits-${MIRRORBIT_VERSION}.tar.gz -O && \
   tar xvzf /mirrorbits-${MIRRORBIT_VERSION}.tar.gz -C / && \
   rm /mirrorbits-${MIRRORBIT_VERSION}.tar.gz
@@ -40,14 +38,12 @@ ADD https://github.com/krallin/tini/releases/download/${tini_version}/tini /bin/
 
 RUN chmod +x /bin/tini
 
-RUN \
-  apt-get update && \
+RUN apt-get update && \
   apt-get install -y ftp rsync ca-certificates && \
   apt-get clean && \
   find /var/lib/apt/lists -type f -delete
 
-RUN \
-  useradd -M mirrorbits && \
+RUN useradd -M mirrorbits && \
   mkdir /etc/mirrorbits  && \
   mkdir /usr/share/mirrorbits/ && \
   mkdir /srv/repo && \
@@ -62,11 +58,11 @@ USER mirrorbits
 
 COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
 
-COPY --from=mirrorbits  /mirrorbits/mirrorbits /usr/bin/mirrorbits
+COPY --from=mirrorbits /mirrorbits/mirrorbits /usr/bin/mirrorbits
 
-COPY --from=mirrorbits  /mirrorbits/templates /usr/share/mirrorbits/templates
+COPY --from=mirrorbits /mirrorbits/templates /usr/share/mirrorbits/templates
 
-ENTRYPOINT ["/bin/tini", "--"]
+ENTRYPOINT [ "/bin/tini","--" ]
 
-CMD [ "/usr/bin/mirrorbits","daemon","--config","/etc/mirrorbits/mirrorbits.conf"]
+CMD [ "/usr/bin/mirrorbits","daemon","--config","/etc/mirrorbits/mirrorbits.conf" ]
 
