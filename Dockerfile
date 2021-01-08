@@ -1,8 +1,6 @@
 FROM debian:stable-slim AS mirrorbits
 
-ARG VERSION=v0.5.1
-
-ENV MIRRORBIT_VERSION $VERSION
+ENV MIRRORBIT_VERSION=v0.5.1
 
 RUN \
   apt-get update && \
@@ -20,12 +18,21 @@ FROM debian:stable-slim
 
 EXPOSE 8080
 
-ARG VERSION=v0.5.1
+ENV TINI_VERSION=v0.19.0
 
-ENV MIRRORBIT_VERSION $VERSION
-LABEL maintainer="https://github.com/olblak"
-LABEL mirrorbit_version=$VERSION
+ENV MIRRORBIT_VERSION=v0.5.1
+
+LABEL MAINTAINER="https://github.com/olblak"
+
+LABEL MIRRORBIT_VERSION=v0.5.1
+
+LABEL TINI_VERSION=v0.19.0
+
 LABEL repository="https://github.com/olblak/mirrorbits"
+
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
+
+RUN chmod +x /bin/tini
 
 RUN \
   apt-get update && \
@@ -50,6 +57,10 @@ USER mirrorbits
 COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
 
 COPY --from=mirrorbits  /mirrorbits/mirrorbits /usr/bin/mirrorbits
+
 COPY --from=mirrorbits  /mirrorbits/templates /usr/share/mirrorbits/templates
 
-ENTRYPOINT /usr/bin/mirrorbits daemon --config /etc/mirrorbits/mirrorbits.conf 
+ENTRYPOINT ["/bin/tini", "--"]
+
+CMD [ "/usr/bin/mirrorbits","daemon","--config","/etc/mirrorbits/mirrorbits.conf"]
+
