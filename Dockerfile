@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS mirrorbits
+FROM debian:stable-slim AS mirrorbits
 
 ARG VERSION=v0.5.1
 
@@ -16,7 +16,7 @@ RUN \
   tar xvzf /mirrorbits-${MIRRORBIT_VERSION}.tar.gz -C / && \
   rm /mirrorbits-${MIRRORBIT_VERSION}.tar.gz
 
-FROM ubuntu:latest
+FROM debian:stable-slim
 
 EXPOSE 8080
 
