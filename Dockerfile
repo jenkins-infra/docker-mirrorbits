@@ -39,7 +39,7 @@ ADD https://github.com/krallin/tini/releases/download/${tini_version}/tini /bin/
 RUN chmod +x /bin/tini
 
 RUN apt-get update && \
-  apt-get install --no-install-recommends -y ftp rsync ca-certificates && \
+  apt-get install --no-install-recommends -y ftp rsync ca-certificates vim-tiny && \
   apt-get clean && \
   find /var/lib/apt/lists -type f -delete
 
