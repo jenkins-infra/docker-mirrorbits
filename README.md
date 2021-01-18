@@ -18,3 +18,8 @@ __Why GeoIP requires an account?__
 * [Helm-chart](https://github.com/jenkins-infra/charts/tree/master/charts/mirrorbits)
 * [Jenkinsfile_Shared-Library](https://github.com/jenkins-infra/pipeline-library)
 * [DockerHub](https://hub.docker.com/repository/docker/jenkinsciinfra/mirrorbits)
+
+## Contribute
+
+If you want to contribute, or build/test the Docker Image, please refer to the following documentation about Docker images for the Jenkins Infra project:
+<https://github.com/jenkins-infra/pipeline-library/blob/split_docker_build_and_publish/resources/io/jenkins/infra/docker/README.adoc>.
