@@ -4,6 +4,10 @@ ARG mirrorbits_version=v0.5.1
 
 ENV MIRRORBIT_VERSION=${mirrorbits_version}
 
+## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
+## and the risk of a breaking behavior is evaluated as low
+## (DL3009)Ignore lint error about apt list cleanup as the command "find" is used instead of rm
+# hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
   apt-get install --no-install-recommends -y tar curl ca-certificates && \
   apt-get clean && \
@@ -38,6 +42,10 @@ ADD https://github.com/krallin/tini/releases/download/${tini_version}/tini /bin/
 
 RUN chmod +x /bin/tini
 
+## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
+## and the risk of a breaking behavior is evaluated as low
+## (DL3009)Ignore lint error about apt list cleanup as the command "find" is used instead of rm
+# hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
   apt-get install --no-install-recommends -y ftp rsync ca-certificates vim-tiny && \
   apt-get clean && \
@@ -65,4 +73,3 @@ COPY --from=mirrorbits /mirrorbits/templates /usr/share/mirrorbits/templates
 ENTRYPOINT [ "/bin/tini","--" ]
 
 CMD [ "/usr/bin/mirrorbits","daemon","--config","/etc/mirrorbits/mirrorbits.conf" ]
-

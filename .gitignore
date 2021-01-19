@@ -1,2 +1,6 @@
 config.env
 mock/repo/*
+*.tar
+hadolint.json
+Makefile
+cst-result.xml
