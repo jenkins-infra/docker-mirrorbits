@@ -1,3 +1,6 @@
+
+@Library('pipeline-library@pull/204/head') _
+
 parallel(
   failFast: true,
   'docker-image': {
