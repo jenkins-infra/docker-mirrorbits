@@ -22,4 +22,4 @@ __Why GeoIP requires an account?__
 ## Contribute
 
 If you want to contribute, or build/test the Docker Image, please refer to the following documentation about Docker images for the Jenkins Infra project:
-<https://github.com/jenkins-infra/pipeline-library/blob/split_docker_build_and_publish/resources/io/jenkins/infra/docker/README.adoc>.
+<https://github.com/jenkins-infra/pipeline-library/tree/master/resources/io/jenkins/infra/docker/README.adoc>
