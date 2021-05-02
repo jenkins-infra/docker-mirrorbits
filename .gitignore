@@ -4,3 +4,4 @@ mock/repo/*
 hadolint.json
 Makefile
 cst-result.xml
+*.swp
