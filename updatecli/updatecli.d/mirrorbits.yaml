@@ -1,3 +1,18 @@
+---
+title: "Bump mirrorbits version"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
 sources:
   latestRelease:
     name: Get latest mirrorbits release version
@@ -5,9 +20,10 @@ sources:
     spec:
       owner: "etix"
       repository: "mirrorbits"
-      token: {{ requiredEnv .github.token }}
-      username: {{ .github.username }}
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
 # no need for condition to check if the docker image is published as we're downloading mirrorbits from github in the Dockerfile
+
 targets:
   updateReleaseInDockerfile:
     name: Update the version of mirrorbits in the Dockerfile
@@ -17,12 +33,15 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "mirrorbits_version"
-    scm:
-      github:
-        user: {{ .github.user }}
-        email: {{ .github.email }}
-        owner: {{ .github.owner }}
-        repository: {{ .github.repository }}
-        token: {{ requiredEnv .github.token }}
-        username: {{ .github.username }}
-        branch: {{ .github.branch }}
+    scmID: default
+
+pullrequests:
+  default:
+    kind: github
+    scmID: default
+    targets:
+      - updateReleaseInDockerfile
+    spec:
+      labels:
+        - dependencies
+        - mirrorbits

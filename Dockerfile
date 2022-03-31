@@ -1,40 +1,25 @@
 FROM debian:stable-slim AS mirrorbits
 
-ARG mirrorbits_version=v0.5.1
-
-ENV MIRRORBIT_VERSION=${mirrorbits_version}
-
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
-## (DL3009)Ignore lint error about apt list cleanup as the command "find" is used instead of rm
-# hadolint ignore=DL3008,DL3009
+# hadolint ignore=DL3008
 RUN apt-get update && \
   apt-get install --no-install-recommends -y tar curl ca-certificates && \
   apt-get clean && \
-  find /var/lib/apt/lists -type f -delete
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+ARG mirrorbits_version=v0.5.1
 RUN mkdir /mirrorbits && \
-  curl -L https://github.com/etix/mirrorbits/releases/download/${MIRRORBIT_VERSION}/mirrorbits-${MIRRORBIT_VERSION}.tar.gz -O && \
-  tar xvzf /mirrorbits-${MIRRORBIT_VERSION}.tar.gz -C / && \
-  rm /mirrorbits-${MIRRORBIT_VERSION}.tar.gz
+  curl -L https://github.com/etix/mirrorbits/releases/download/${mirrorbits_version}/mirrorbits-${mirrorbits_version}.tar.gz -O && \
+  tar xvzf /mirrorbits-${mirrorbits_version}.tar.gz -C / && \
+  rm /mirrorbits-${mirrorbits_version}.tar.gz
 
 FROM debian:stable-slim
 
 EXPOSE 8080
 
 ARG tini_version=v0.19.0
-
 ARG mirrorbits_version=v0.5.1
-
-ENV TINI_VERSION=${tini_version}
-
-ENV MIRRORBITS_VERSION=${mirrorbits_version}
-
-LABEL MAINTAINER="https://github.com/olblak"
-
-LABEL MIRRORBITS_VERSION=${mirrorbits_version}
-
-LABEL TINI_VERSION=${tini_version}
 
 LABEL repository="https://github.com/olblak/mirrorbits"
 
@@ -44,12 +29,11 @@ RUN chmod +x /bin/tini
 
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
-## (DL3009)Ignore lint error about apt list cleanup as the command "find" is used instead of rm
-# hadolint ignore=DL3008,DL3009
+# hadolint ignore=DL3008
 RUN apt-get update && \
   apt-get install --no-install-recommends -y ftp rsync ca-certificates vim-tiny && \
   apt-get clean && \
-  find /var/lib/apt/lists -type f -delete
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN useradd -M mirrorbits && \
   mkdir /etc/mirrorbits  && \
@@ -69,6 +53,10 @@ COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
 COPY --from=mirrorbits /mirrorbits/mirrorbits /usr/bin/mirrorbits
 
 COPY --from=mirrorbits /mirrorbits/templates /usr/share/mirrorbits/templates
+
+LABEL io.jenkins-infra.tools="mirrorbits,tini"
+LABEL io.jenkins-infra.tools.mirrorbits.version="${mirrorbits_version}"
+LABEL io.jenkins-infra.tools.tini.version="${tini_version}"
 
 ENTRYPOINT [ "/bin/tini","--" ]
 
