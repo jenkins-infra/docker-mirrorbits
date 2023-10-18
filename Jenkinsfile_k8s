@@ -1,1 +1,1 @@
-parallelDockerUpdatecli([imageName: 'mirrorbits'])
+parallelDockerUpdatecli([imageName: 'mirrorbits', buildDockerConfig: [targetplatforms: 'linux/amd64,linux/arm64']])
