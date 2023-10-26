@@ -4,19 +4,27 @@ FROM debian:stable-slim AS mirrorbits
 ## and the risk of a breaking behavior is evaluated as low
 # hadolint ignore=DL3008
 RUN apt-get update && \
-  apt-get install --no-install-recommends -y tar curl ca-certificates && \
+  apt-get install --no-install-recommends -y tar curl ca-certificates git && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+ARG go_version=1.21.3
+RUN mkdir -p /tmp/tools/ && \
+  curl -L "https://go.dev/dl/go${go_version}.linux-$(dpkg --print-architecture).tar.gz" --output /tmp/tools/go.tar.gz && \
+  tar -C /tmp/tools/ -xzf /tmp/tools/go.tar.gz
+
 ARG mirrorbits_version=v0.5.1
-RUN mkdir /mirrorbits && \
-  curl -L https://github.com/etix/mirrorbits/releases/download/${mirrorbits_version}/mirrorbits-${mirrorbits_version}.tar.gz -O && \
-  tar xvzf /mirrorbits-${mirrorbits_version}.tar.gz -C /
+ARG mirrorbits_current_commit=9189dc7
+# hadolint ignore=DL3003
+RUN git clone https://github.com/etix/mirrorbits /tmp/tools/mirrorbits && \
+  cd /tmp/tools/mirrorbits && \
+  git checkout "${mirrorbits_current_commit}" && \
+  /tmp/tools/go/bin/go build
 
 ARG tini_version=v0.19.0
-RUN curl --silent --show-error --output /mirrorbits/tini --location \
+RUN curl --silent --show-error --output /tmp/tools/tini --location \
   "https://github.com/krallin/tini/releases/download/${tini_version}/tini-$(dpkg --print-architecture)" && \
-  chmod +x /mirrorbits/tini
+  chmod +x /tmp/tools/tini
 
 FROM debian:stable-slim
 
@@ -51,11 +59,11 @@ USER mirrorbits
 
 COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
 
-COPY --from=mirrorbits /mirrorbits/tini /bin/tini
+COPY --from=mirrorbits /tmp/tools/tini /bin/tini
 
-COPY --from=mirrorbits /mirrorbits/mirrorbits /usr/bin/mirrorbits
+COPY --from=mirrorbits /tmp/tools/mirrorbits/mirrorbits /usr/bin/mirrorbits
 
-COPY --from=mirrorbits /mirrorbits/templates /usr/share/mirrorbits/templates
+COPY --from=mirrorbits /tmp/tools/mirrorbits/templates /usr/share/mirrorbits/templates
 
 LABEL io.jenkins-infra.tools="mirrorbits,tini"
 LABEL io.jenkins-infra.tools.mirrorbits.version="${mirrorbits_version}"
