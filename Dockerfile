@@ -11,8 +11,12 @@ RUN apt-get update && \
 ARG mirrorbits_version=v0.5.1
 RUN mkdir /mirrorbits && \
   curl -L https://github.com/etix/mirrorbits/releases/download/${mirrorbits_version}/mirrorbits-${mirrorbits_version}.tar.gz -O && \
-  tar xvzf /mirrorbits-${mirrorbits_version}.tar.gz -C / && \
-  rm /mirrorbits-${mirrorbits_version}.tar.gz
+  tar xvzf /mirrorbits-${mirrorbits_version}.tar.gz -C /
+
+ARG tini_version=v0.19.0
+RUN curl --silent --show-error --output /mirrorbits/tini --location \
+  "https://github.com/krallin/tini/releases/download/${tini_version}/tini-$(dpkg --print-architecture)" && \
+  chmod +x /mirrorbits/tini
 
 FROM debian:stable-slim
 
@@ -22,10 +26,6 @@ ARG tini_version=v0.19.0
 ARG mirrorbits_version=v0.5.1
 
 LABEL repository="https://github.com/olblak/mirrorbits"
-
-ADD https://github.com/krallin/tini/releases/download/${tini_version}/tini /bin/tini
-
-RUN chmod +x /bin/tini
 
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
@@ -49,6 +49,8 @@ RUN useradd -M mirrorbits && \
 USER mirrorbits
 
 COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
+
+COPY --from=mirrorbits /mirrorbits/tini /bin/tini
 
 COPY --from=mirrorbits /mirrorbits/mirrorbits /usr/bin/mirrorbits
 
