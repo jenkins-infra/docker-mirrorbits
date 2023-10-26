@@ -8,13 +8,13 @@ RUN apt-get update && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ARG tini_version=v0.19.0
 ARG mirrorbits_version=v0.5.1
 RUN mkdir /mirrorbits && \
   curl -L https://github.com/etix/mirrorbits/releases/download/${mirrorbits_version}/mirrorbits-${mirrorbits_version}.tar.gz -O && \
-  tar xvzf /mirrorbits-${mirrorbits_version}.tar.gz -C / && \
-  rm /mirrorbits-${mirrorbits_version}.tar.gz && \
-  curl --silent --show-error --output /mirrorbits/tini --location \
+  tar xvzf /mirrorbits-${mirrorbits_version}.tar.gz -C /
+
+ARG tini_version=v0.19.0
+RUN curl --silent --show-error --output /mirrorbits/tini --location \
   "https://github.com/krallin/tini/releases/download/${tini_version}/tini-$(dpkg --print-architecture)" && \
   chmod +x /mirrorbits/tini
 
