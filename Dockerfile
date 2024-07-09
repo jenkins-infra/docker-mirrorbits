@@ -1,4 +1,4 @@
-FROM debian:stable-slim AS mirrorbits
+FROM golang:1.11 AS build
 
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
@@ -25,8 +25,8 @@ ARG tini_version=v0.19.0
 RUN curl --silent --show-error --output /tmp/tools/tini --location \
   "https://github.com/krallin/tini/releases/download/${tini_version}/tini-$(dpkg --print-architecture)" && \
   chmod +x /tmp/tools/tini
-
-FROM debian:stable-slim
+  
+FROM debian:stable-slim AS mirrorbits
 
 EXPOSE 8080
 
@@ -59,11 +59,9 @@ USER mirrorbits
 
 COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
 
-COPY --from=mirrorbits /tmp/tools/tini /bin/tini
-
-COPY --from=mirrorbits /tmp/tools/mirrorbits/mirrorbits /usr/bin/mirrorbits
-
-COPY --from=mirrorbits /tmp/tools/mirrorbits/templates /usr/share/mirrorbits/templates
+COPY --from=build /tmp/tools/tini /bin/tini
+COPY --from=build /tmp/tools/mirrorbits/mirrorbits /usr/bin/mirrorbits
+COPY --from=build /tmp/tools/mirrorbits/templates /usr/share/mirrorbits/templates
 
 LABEL io.jenkins-infra.tools="mirrorbits,tini"
 LABEL io.jenkins-infra.tools.mirrorbits.version="${mirrorbits_version}"
