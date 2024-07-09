@@ -33,8 +33,6 @@ EXPOSE 8080
 ARG tini_version=v0.19.0
 ARG mirrorbits_version=v0.5.1
 
-LABEL repository="https://github.com/olblak/mirrorbits"
-
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
 # hadolint ignore=DL3008
@@ -63,9 +61,11 @@ COPY --from=build /tmp/tools/tini /bin/tini
 COPY --from=build /tmp/tools/mirrorbits/mirrorbits /usr/bin/mirrorbits
 COPY --from=build /tmp/tools/mirrorbits/templates /usr/share/mirrorbits/templates
 
-LABEL io.jenkins-infra.tools="mirrorbits,tini"
-LABEL io.jenkins-infra.tools.mirrorbits.version="${mirrorbits_version}"
-LABEL io.jenkins-infra.tools.tini.version="${tini_version}"
+LABEL \
+  io.jenkins-infra.tools="mirrorbits,tini" \
+  io.jenkins-infra.tools.mirrorbits.version="${mirrorbits_version}" \
+  io.jenkins-infra.tools.tini.version="${tini_version}" \
+  repository="https://github.com/jenkins-infra/docker-mirrorbits"
 
 ENTRYPOINT [ "/bin/tini","--" ]
 
