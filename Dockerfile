@@ -3,23 +3,28 @@ FROM golang:1.11 AS build
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
 # hadolint ignore=DL3008
-RUN apt-get update && \
-  apt-get install --no-install-recommends -y tar curl ca-certificates git && \
+RUN apt-get -qq update && \
+  apt-get install --no-install-recommends -y libgeoip-dev tar curl ca-certificates git unzip && \
   apt-get clean && \
+  curl --location --silent --show-error --fail https://github.com/protocolbuffers/protobuf/releases/download/v3.5.1/protoc-3.5.1-linux-aarch_64.zip --output /tmp/protoc.zip && \
+  unzip /tmp/protoc.zip -d "$HOME"/protoc && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ARG go_version=1.21.3
-RUN mkdir -p /tmp/tools/ && \
-  curl -L "https://go.dev/dl/go${go_version}.linux-$(dpkg --print-architecture).tar.gz" --output /tmp/tools/go.tar.gz && \
-  tar -C /tmp/tools/ -xzf /tmp/tools/go.tar.gz
+ENV GOBIN="$GOPATH/bin"
+ENV PROTOCBIN="$HOME/protoc/bin"
+ENV PATH="$PATH:$PROTOCBIN:$GOBIN"
+ENV GO111MODULE="on"
 
 ARG mirrorbits_version=v0.5.1
 ARG mirrorbits_current_commit=9189dc7
 # hadolint ignore=DL3003
-RUN git clone https://github.com/etix/mirrorbits /tmp/tools/mirrorbits && \
-  cd /tmp/tools/mirrorbits && \
-  git checkout "${mirrorbits_current_commit}" && \
-  /tmp/tools/go/bin/go build
+RUN git clone https://github.com/etix/mirrorbits "${GOPATH}/src/mirrorbits" && \
+  cd "${GOPATH}/src/mirrorbits" && \
+  git checkout "${mirrorbits_version}"
+
+# WIP
+WORKDIR "${GOPATH}/src/mirrorbits"
+RUN go build
 
 ARG tini_version=v0.19.0
 RUN curl --silent --show-error --output /tmp/tools/tini --location \
