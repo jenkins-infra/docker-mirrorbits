@@ -41,6 +41,7 @@ RUN useradd -M mirrorbits && \
   mkdir /srv/repo && \
   mkdir /run/mirrorbits && \
   mkdir /var/log/mirrorbits && \
+  ln -s /dev/stdout /var/log/mirrorbits/downloads.log && \
   chown mirrorbits -R /usr/share/mirrorbits/ && \
   chown mirrorbits /run/mirrorbits && \
   chown mirrorbits /var/log/mirrorbits && \
