@@ -1,42 +1,38 @@
-FROM golang:1.11 AS build
+FROM golang:1.23.0 AS build
 
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
 # hadolint ignore=DL3008
 RUN apt-get -qq update && \
-  apt-get install --no-install-recommends -y libgeoip-dev tar curl ca-certificates git unzip && \
+  apt-get install --no-install-recommends -y libgeoip-dev tar curl ca-certificates git unzip zlib1g-dev && \
   apt-get clean && \
-  curl --location --silent --show-error --fail https://github.com/protocolbuffers/protobuf/releases/download/v3.5.1/protoc-3.5.1-linux-aarch_64.zip --output /tmp/protoc.zip && \
-  unzip /tmp/protoc.zip -d "$HOME"/protoc && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ENV GOBIN="$GOPATH/bin"
-ENV PROTOCBIN="$HOME/protoc/bin"
-ENV PATH="$PATH:$PROTOCBIN:$GOBIN"
-ENV GO111MODULE="on"
+# 955a8b2e1aacea1cae06396a64afbb531ceb36d4 introduced go modules (for Go >= 1.11) and commited the generated code from protoc
+# v0.5.1 tag is a bit older (but without these 2 majors elements): https://github.com/etix/mirrorbits/commit/e83e56ac6496a3643d18a731324bd266f75f7b32 commit
+# Diff: https://github.com/etix/mirrorbits/compare/e83e56ac6496a3643d18a731324bd266f75f7b32..955a8b2e1aacea1cae06396a64afbb531ceb36d4
+ARG mirrorbits_version=955a8b2e1aacea1cae06396a64afbb531ceb36d4
 
-ARG mirrorbits_version=v0.5.1
-ARG mirrorbits_current_commit=9189dc7
+WORKDIR "/mirrorbits"
+
 # hadolint ignore=DL3003
-RUN git clone https://github.com/etix/mirrorbits "${GOPATH}/src/mirrorbits" && \
-  cd "${GOPATH}/src/mirrorbits" && \
+RUN git clone https://github.com/etix/mirrorbits ./ && \
   git checkout "${mirrorbits_version}"
 
-# WIP
-WORKDIR "${GOPATH}/src/mirrorbits"
-RUN go build
+# Do not call parent target (dependencies are vendorized) but we still want the proper LDFLAGS
+RUN sed -i 's/^build:.*/build:/g' Makefile && \
+  make build
 
 ARG tini_version=v0.19.0
-RUN curl --silent --show-error --output /tmp/tools/tini --location \
+RUN curl --silent --show-error --output ./tini --location \
   "https://github.com/krallin/tini/releases/download/${tini_version}/tini-$(dpkg --print-architecture)" && \
-  chmod +x /tmp/tools/tini
-  
+  chmod a+x ./tini
+
 FROM debian:stable-slim AS mirrorbits
 
-EXPOSE 8080
-
+# Repeat ARGS for labels
 ARG tini_version=v0.19.0
-ARG mirrorbits_version=v0.5.1
+ARG mirrorbits_version=955a8b2e1aacea1cae06396a64afbb531ceb36d4
 
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
@@ -62,15 +58,17 @@ USER mirrorbits
 
 COPY config/mirrorbits.conf /etc/mirrorbits/mirrorbits.conf
 
-COPY --from=build /tmp/tools/tini /bin/tini
-COPY --from=build /tmp/tools/mirrorbits/mirrorbits /usr/bin/mirrorbits
-COPY --from=build /tmp/tools/mirrorbits/templates /usr/share/mirrorbits/templates
+COPY --from=build /mirrorbits/tini /bin/tini
+COPY --from=build /mirrorbits/bin/mirrorbits /usr/bin/mirrorbits
+COPY --from=build /mirrorbits/templates /usr/share/mirrorbits/templates
 
 LABEL \
   io.jenkins-infra.tools="mirrorbits,tini" \
   io.jenkins-infra.tools.mirrorbits.version="${mirrorbits_version}" \
   io.jenkins-infra.tools.tini.version="${tini_version}" \
   repository="https://github.com/jenkins-infra/docker-mirrorbits"
+
+EXPOSE 8080 3390
 
 ENTRYPOINT [ "/bin/tini","--" ]
 
