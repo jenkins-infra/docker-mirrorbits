@@ -11,7 +11,7 @@ RUN apt-get -qq update && \
 # 955a8b2e1aacea1cae06396a64afbb531ceb36d4 introduced go modules (for Go >= 1.11) and commited the generated code from protoc
 # v0.5.1 tag is a bit older (but without these 2 majors elements): https://github.com/etix/mirrorbits/commit/e83e56ac6496a3643d18a731324bd266f75f7b32 commit
 # Diff: https://github.com/etix/mirrorbits/compare/e83e56ac6496a3643d18a731324bd266f75f7b32..955a8b2e1aacea1cae06396a64afbb531ceb36d4
-ARG mirrorbits_version=955a8b2e1aacea1cae06396a64afbb531ceb36d4
+ARG mirrorbits_version=v0.5.1
 
 WORKDIR "/mirrorbits"
 
@@ -32,7 +32,7 @@ FROM debian:stable-slim AS mirrorbits
 
 # Repeat ARGS for labels
 ARG tini_version=v0.19.0
-ARG mirrorbits_version=955a8b2e1aacea1cae06396a64afbb531ceb36d4
+ARG mirrorbits_version=v0.5.1
 
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
