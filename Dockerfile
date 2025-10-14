@@ -1,4 +1,4 @@
-FROM golang:1.25.2 AS build
+FROM golang:1.25.3 AS build
 
 ## (DL3008)Ignore lint error about apt pinned packages, as we always want the latest version of these tools
 ## and the risk of a breaking behavior is evaluated as low
