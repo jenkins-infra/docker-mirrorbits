@@ -1,4 +1,4 @@
 buildDockerAndPublishImage('mirrorbits', [
     publishToPrivateAzureRegistry: true,
-    targetplatforms: 'linux/arm64',
+    targetplatforms: 'linux/arm64,linux/amd64',
 ])
