@@ -18,8 +18,8 @@ sources:
     name: Get Latest tini release version
     kind: githubrelease
     spec:
-      owner: "krallin"
-      repository: "tini"
+      owner: krallin
+      repository: tini
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
 
@@ -30,16 +30,17 @@ targets:
     spec:
       file: Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "tini_version"
+        keyword: ARG
+        matcher: tini_version
     scmid: default
 
 actions:
   default:
     kind: github/pullrequest
-    title: Bump tini version to {{ source `lastVersion` }}
+    title: 'chore: Bump tini version to {{ source `lastVersion` }}'
     scmid: default
     spec:
       labels:
         - dependencies
         - tini
+        - chore
