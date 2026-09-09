@@ -37,16 +37,17 @@ targets:
     spec:
       file: Dockerfile
       instruction:
-        keyword: "FROM"
-        matcher: "golang"
+        keyword: FROM
+        matcher: golang
     scmid: default
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump Golang version to {{ source "latestGoVersion" }}
+    title: 'chore: Bump mirrorbit build Golang version to {{ source "latestGoVersion" }}'
     spec:
       labels:
         - dependencies
         - golang
+        - chore

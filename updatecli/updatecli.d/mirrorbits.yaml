@@ -18,8 +18,8 @@ sources:
     name: Get latest mirrorbits release version
     kind: githubrelease
     spec:
-      owner: "etix"
-      repository: "mirrorbits"
+      owner: videolabs
+      repository: mirrorbits
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
 
@@ -32,16 +32,17 @@ targets:
     spec:
       file: Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "mirrorbits_version"
+        keyword: ARG
+        matcher: mirrorbits_version
     scmid: default
 
 actions:
   default:
     kind: github/pullrequest
-    title: Bump mirrorbits version to {{ source `latestRelease` }}
+    title: 'feat: Bump mirrorbits version to {{ source `latestRelease` }}'
     scmid: default
     spec:
       labels:
         - dependencies
         - mirrorbits
+        - enhancement

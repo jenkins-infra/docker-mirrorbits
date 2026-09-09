@@ -8,20 +8,15 @@ RUN apt-get -qq update && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# 955a8b2e1aacea1cae06396a64afbb531ceb36d4 introduced go modules (for Go >= 1.11) and commited the generated code from protoc
-# v0.5.1 tag is a bit older (but without these 2 majors elements): https://github.com/etix/mirrorbits/commit/e83e56ac6496a3643d18a731324bd266f75f7b32 commit
-# Diff: https://github.com/etix/mirrorbits/compare/e83e56ac6496a3643d18a731324bd266f75f7b32..955a8b2e1aacea1cae06396a64afbb531ceb36d4
 ARG mirrorbits_version=v0.6.2
 
 WORKDIR "/mirrorbits"
 
 # hadolint ignore=DL3003
-RUN git clone https://github.com/etix/mirrorbits ./ && \
+RUN git clone https://github.com/videolabs/mirrorbits ./ && \
   git checkout "${mirrorbits_version}"
 
-# Do not call parent target (dependencies are vendorized) but we still want the proper LDFLAGS
-RUN sed -i 's/^build:.*/build:/g' Makefile && \
-  make build
+RUN make build
 
 ARG tini_version=v0.19.0
 RUN curl --silent --show-error --output ./tini --location \
